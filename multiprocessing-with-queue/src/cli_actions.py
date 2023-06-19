@@ -6,12 +6,13 @@ from src.process_manager import ProcessManager
 
 
 class SimpleMsgSource(MsgSource):
-    def __init__(self, n: int):
+    def __init__(self, n: int, task_duration: float):
         """
         :param n: how many messages to produce
         """
-        log_debug("SimpleMsgSource.__init__", f"n={n}")
+        log_debug("SimpleMsgSource.__init__", f"n={n} task_duration={task_duration}")
         self._n = n
+        self._task_duration = task_duration
 
     def get_msg(self):
         log_debug("SimpleMsgSource.get_msg", "")
@@ -21,7 +22,7 @@ class SimpleMsgSource(MsgSource):
     def create_msg(self, i: int):
         log_debug("SimpleMsgSource.create_msg", str(i))
         return {
-            "duration_s": 2,
+            "duration_s": self._task_duration,
             "msg_id": i,
         }
 
@@ -48,15 +49,16 @@ class SimpleMsgSink(MsgSink):
 
 
 def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
-                    worker_count: int):
+                    worker_count: int, task_duration_sec: float):
     """
     Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
     :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
     :param queue_max_size: maximum number of messages the queue can hold at any given time
     :param queue_get_and_put_timeout_s: q.put() and q.get() operations will wait at most these many seconds before timing out
     :param worker_count: number of processes reading messages off the queue and executing/processing them
+    :param task_duration_sec: how long will it take to process a message (to simulate io-bound msg processing)
     """
-    src = SimpleMsgSource(num_of_msg_to_create)
+    src = SimpleMsgSource(num_of_msg_to_create, task_duration_sec)
     dst = SimpleMsgSink()
     p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s)
     p.process(src, dst, worker_count)

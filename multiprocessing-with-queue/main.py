@@ -32,7 +32,14 @@ def opt_setup():
         "--worker-count",
         type=int,
         required=True,
-        help="number of processes reading messages from the queue and processing them"
+        help="Number of processes reading messages from the queue and processing them"
+    )
+
+    parser.add_argument(
+        "--task-duration-sec",
+        type=float,
+        default=2,
+        help="How long it takes to process a message (in seconds)."
     )
 
     return parser
@@ -47,7 +54,8 @@ def main():
         num_of_msg_to_create=args.msg_count,
         queue_max_size=args.queue_size,
         queue_get_and_put_timeout_s=args.queue_timeout,
-        worker_count=args.worker_count
+        worker_count=args.worker_count,
+        task_duration_sec=args.task_duration_sec,
     )
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000
