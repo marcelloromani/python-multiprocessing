@@ -32,11 +32,22 @@ class SimpleMsgSink(MsgSink):
         log_info("process_msg", "end")
 
 
-def main():
-    src = SimpleMsgSource(10)
+def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int, worker_count: int):
+    """
+    Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
+    :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
+    :param queue_max_size: maximum number of messages the queue can hold at any given time
+    :param queue_get_and_put_timeout_s: q.put() and q.get() operations will wait at most these many seconds before timing out
+    :param worker_count: number of processes reading messages off the queue and executing/processing them
+    """
+    src = SimpleMsgSource(num_of_msg_to_create)
     dst = SimpleMsgSink()
-    p = ProcessManager(queue_max_size=1, queue_timeout_s=1)
-    p.process(src, dst, worker_count=5)
+    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s)
+    p.process(src, dst, worker_count)
+
+
+def main():
+    message_factory(5, 1, 1, 10)
 
 
 if __name__ == "__main__":
