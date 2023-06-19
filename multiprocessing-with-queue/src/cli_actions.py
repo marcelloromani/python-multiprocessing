@@ -1,6 +1,6 @@
 from time import sleep
 
-from src.log import log_info
+from src.log import log_debug
 from src.process_manager import MsgSource, MsgSink
 from src.process_manager import ProcessManager
 
@@ -10,16 +10,16 @@ class SimpleMsgSource(MsgSource):
         """
         :param n: how many messages to produce
         """
-        log_info("SimpleMsgSource.__init__", f"n={n}")
+        log_debug("SimpleMsgSource.__init__", f"n={n}")
         self._n = n
 
     def get_msg(self):
-        log_info("SimpleMsgSource.get_msg", "")
+        log_debug("SimpleMsgSource.get_msg", "")
         for i in range(self._n):
             yield self.create_msg(i)
 
     def create_msg(self, i: int):
-        log_info("SimpleMsgSource.create_msg", str(i))
+        log_debug("SimpleMsgSource.create_msg", str(i))
         return {
             "duration_s": 2,
             "msg_id": i,
@@ -30,21 +30,21 @@ class SimpleMsgSink(MsgSink):
 
     def __init__(self):
         METHOD = "SimpleMsgSink.__init__"
-        log_info(METHOD, "")
+        log_debug(METHOD, "")
         self._processed_message = 0
 
     def __del__(self):
         METHOD = "SimpleMsgSink.__del__"
-        log_info(METHOD, f"Processed {self._processed_message} messages.")
+        log_debug(METHOD, f"Processed {self._processed_message} messages.")
 
     def process_msg(self, msg):
         METHOD = "SimpleMsgSink.process_msg"
-        log_info(METHOD, "start")
+        log_debug(METHOD, "start")
         duration_s = msg["duration_s"]
-        log_info(METHOD, f"Processing {msg}")
+        log_debug(METHOD, f"Processing {msg}")
         sleep(duration_s)
         self._processed_message += 1
-        log_info(METHOD, "end")
+        log_debug(METHOD, "end")
 
 
 def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
