@@ -1,5 +1,6 @@
 import queue
 from multiprocessing import Queue, Process
+from time import sleep
 
 from src.log import log_debug
 
@@ -20,34 +21,47 @@ class ProcessManager:
     MSG_TYPE_USER: str = "USER"
     MSG_TYPE_QUIT: str = "QUIT"
 
-    def __init__(self, queue_max_size: int, queue_timeout_s: int = 10):
+    def __init__(self, queue_max_size: int, queue_timeout_s: int = 10, queue_full_max_attempts: int = 1):
         """
         :param queue_max_size: maximum size of the internal queue
         :param queue_timeout_s: how long to wait for a q.get() or q.put() to succeed before declaring it failed
+        :param queue_full_max_attempts: retry when q.put() fails due to Queue Full
         """
         METHOD = "ProcessManager.__init__"
 
         self._q = Queue(queue_max_size)
         self._queue_timeout = queue_timeout_s
-        log_debug(METHOD, f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s}")
+        self._queue_full_max_attempts = queue_full_max_attempts
+        log_debug(METHOD,
+                  f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s} queue_full_max_attempts: {queue_full_max_attempts}")
 
-    @staticmethod
-    def _enqueue_msg(q: Queue, msg_type: str, msg: str, timeout: int):
+    def _enqueue_msg(self, q: Queue, msg_type: str, msg: str, timeout: int):
         METHOD: str = "ProcessManager._enqueue_msg"
 
-        try:
-            log_debug(METHOD, f"Trying to enqueue {msg_type} {msg}")
-            q.put((msg_type, msg), block=True, timeout=timeout)
-            log_debug(METHOD, f"Enqueued {msg_type} {msg}")
-        except TimeoutError as e:
-            log_debug(METHOD, f"TimeoutError: {e}")
-            raise e
-        except queue.Full as e:
-            log_debug(METHOD, f"queue.Full: {e}")
-            raise e
-        except Exception as e:
-            log_debug(METHOD, f"Exception: {e}")
-            raise e
+        # how many times should we try to enqueue a message if the queue is full?
+        WAIT_BEFORE_NEXT_ATTEMPT_S: float = 1
+        attempts: int = 0
+
+        while attempts < self._queue_full_max_attempts:
+            try:
+                attempts += 1
+                log_debug(METHOD, f"Trying to enqueue {msg_type} {msg} attempts={attempts}")
+                q.put((msg_type, msg), block=True, timeout=timeout)
+                log_debug(METHOD, f"Enqueued {msg_type} {msg}")
+                break
+            except TimeoutError as e:
+                log_debug(METHOD, f"TimeoutError: {e}")
+                raise e
+            except queue.Full as e:
+                log_debug(METHOD, f"queue.Full: {e}")
+                if attempts < self._queue_full_max_attempts:
+                    log_debug(METHOD, "Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+                    sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
+                else:
+                    raise e
+            except Exception as e:
+                log_debug(METHOD, f"Exception: {e}")
+                raise e
 
     @staticmethod
     def _dequeue_msg(q: Queue, timeout: int):

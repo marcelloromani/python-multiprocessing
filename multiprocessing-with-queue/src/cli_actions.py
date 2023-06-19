@@ -49,7 +49,7 @@ class SimpleMsgSink(MsgSink):
 
 
 def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
-                    worker_count: int, task_duration_sec: float):
+                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int):
     """
     Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
     :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
@@ -57,8 +57,9 @@ def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_an
     :param queue_get_and_put_timeout_s: q.put() and q.get() operations will wait at most these many seconds before timing out
     :param worker_count: number of processes reading messages off the queue and executing/processing them
     :param task_duration_sec: how long will it take to process a message (to simulate io-bound msg processing)
+    :param queue_full_max_attempts: "Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception.
     """
     src = SimpleMsgSource(num_of_msg_to_create, task_duration_sec)
     dst = SimpleMsgSink()
-    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s)
+    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s, queue_full_max_attempts)
     p.process(src, dst, worker_count)

@@ -42,6 +42,13 @@ def opt_setup():
         help="How long it takes to process a message (in seconds)."
     )
 
+    parser.add_argument(
+        "--queue-full-max-attempts",
+        type=int,
+        default=1,
+        help="Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception."
+    )
+
     return parser
 
 
@@ -56,6 +63,7 @@ def main():
         queue_get_and_put_timeout_s=args.queue_timeout,
         worker_count=args.worker_count,
         task_duration_sec=args.task_duration_sec,
+        queue_full_max_attempts=args.queue_full_max_attempts,
     )
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000
