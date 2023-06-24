@@ -64,6 +64,11 @@ class ProcessManager:
                 log_debug(METHOD, f"queue.Full: {e}")
                 if attempts < self._queue_full_max_attempts:
                     log_debug(METHOD, "Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+
+                    if self._mermaid_diagram:
+                        proc_id = f"Proc.{os.getpid()}"
+                        print(f"    {proc_id} ->> {proc_id}: queueFull")
+
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
                     raise e
