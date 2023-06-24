@@ -1,3 +1,4 @@
+import os
 import queue
 from multiprocessing import Queue, Process
 from time import sleep
@@ -21,7 +22,8 @@ class ProcessManager:
     MSG_TYPE_USER: str = "USER"
     MSG_TYPE_QUIT: str = "QUIT"
 
-    def __init__(self, queue_max_size: int, queue_timeout_s: int = 10, queue_full_max_attempts: int = 1):
+    def __init__(self, queue_max_size: int, queue_timeout_s: int = 10, queue_full_max_attempts: int = 1,
+                 mermaid_diagram: bool = False):
         """
         :param queue_max_size: maximum size of the internal queue
         :param queue_timeout_s: how long to wait for a q.get() or q.put() to succeed before declaring it failed
@@ -32,6 +34,7 @@ class ProcessManager:
         self._q = Queue(queue_max_size)
         self._queue_timeout = queue_timeout_s
         self._queue_full_max_attempts = queue_full_max_attempts
+        self._mermaid_diagram = mermaid_diagram
         log_debug(METHOD,
                   f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s} queue_full_max_attempts: {queue_full_max_attempts}")
 
@@ -47,6 +50,11 @@ class ProcessManager:
                 attempts += 1
                 log_debug(METHOD, f"Trying to enqueue {msg_type} {msg} attempts={attempts}")
                 q.put((msg_type, msg), block=True, timeout=timeout)
+
+                if self._mermaid_diagram:
+                    proc_id = f"Proc.{os.getpid()}"
+                    print(f"    {proc_id} ->> Queue: \"{msg_type} {msg}\"")
+
                 log_debug(METHOD, f"Enqueued {msg_type} {msg}")
                 break
             except TimeoutError as e:
@@ -63,13 +71,17 @@ class ProcessManager:
                 log_debug(METHOD, f"Exception: {e}")
                 raise e
 
-    @staticmethod
-    def _dequeue_msg(q: Queue, timeout: int):
+    def _dequeue_msg(self, q: Queue, timeout: int):
         METHOD: str = "ProcessManager._dequeue_msg"
 
         try:
             log_debug(METHOD, "trying to dequeue message")
             msg_type, msg = q.get(block=True, timeout=timeout)
+
+            if self._mermaid_diagram:
+                proc_id = f"Proc.{os.getpid()}"
+                print(f"    Queue ->> {proc_id}: \"{msg_type} {msg}\"")
+
             log_debug(METHOD, f"dequeued {msg_type} {msg}")
             return msg_type, msg
         except TimeoutError as e:
@@ -80,6 +92,9 @@ class ProcessManager:
             raise e
 
     def process(self, msg_source: MsgSource, msg_sink: MsgSink, worker_count: int):
+        if self._mermaid_diagram:
+            print("sequenceDiagram")
+
         METHOD: str = "ProcessManager.process"
 
         log_debug(METHOD, "start")
