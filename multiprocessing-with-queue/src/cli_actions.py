@@ -17,7 +17,6 @@ class SimpleMsgSource(MsgSource):
 
     def get_msg(self):
         log_debug("SimpleMsgSource.get_msg", "")
-        sleep(5)
         for i in range(self._n):
             yield self.create_msg(i)
 
