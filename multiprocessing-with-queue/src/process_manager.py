@@ -29,6 +29,8 @@ class ProcessManager:
         :param queue_max_size: maximum size of the internal queue
         :param queue_timeout_s: how long to wait for a q.get() or q.put() to succeed before declaring it failed
         :param queue_full_max_attempts: retry when q.put() fails due to Queue Full
+        :param queue_empty_max_attempts: retry when q.get() fails due to Queue Empty
+        :param mermaid_diagram: if True, print Mermaid-compatible sequenceDiagram directives
         """
         METHOD = "ProcessManager.__init__"
 
