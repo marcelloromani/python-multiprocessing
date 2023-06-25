@@ -74,9 +74,6 @@ class ProcessManager:
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
                     raise e
-            except Exception as e:
-                log_debug(METHOD, f"Exception: {e}")
-                raise e
 
     def _dequeue_msg(self, q: Queue, timeout: int):
         METHOD: str = "ProcessManager._dequeue_msg"
@@ -112,9 +109,6 @@ class ProcessManager:
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
                     raise e
-            except Exception as e:
-                log_debug(METHOD, f"Exception: {e}")
-                raise e
 
     def process(self, msg_source: MsgSource, msg_sink: MsgSink, worker_count: int):
         if self._mermaid_diagram:
