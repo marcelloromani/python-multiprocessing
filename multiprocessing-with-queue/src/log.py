@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-LOG_ENABLED = True
+LOG_ENABLED = False
 
 
 def log_debug(f: str, msg: str):

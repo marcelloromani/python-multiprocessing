@@ -49,6 +49,13 @@ def opt_setup():
         help="Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception."
     )
 
+    parser.add_argument(
+        "--mermaid-diagram",
+        action="store_true",
+        default=False,
+        help="Output a mermaid-compatible sequence diagram."
+    )
+
     return parser
 
 
@@ -64,6 +71,7 @@ def main():
         worker_count=args.worker_count,
         task_duration_sec=args.task_duration_sec,
         queue_full_max_attempts=args.queue_full_max_attempts,
+        mermaid_diagram=args.mermaid_diagram,
     )
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000

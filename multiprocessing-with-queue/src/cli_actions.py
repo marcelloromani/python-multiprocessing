@@ -1,3 +1,4 @@
+import os
 from time import sleep
 
 from src.log import log_debug
@@ -29,16 +30,21 @@ class SimpleMsgSource(MsgSource):
 
 class SimpleMsgSink(MsgSink):
 
-    def __init__(self):
+    def __init__(self, mermaid_diagram: bool = False):
         METHOD = "SimpleMsgSink.__init__"
         log_debug(METHOD, "")
         self._processed_message = 0
+        self._mermaid_diagram = mermaid_diagram
 
     def __del__(self):
         METHOD = "SimpleMsgSink.__del__"
         log_debug(METHOD, f"Processed {self._processed_message} messages.")
 
     def process_msg(self, msg):
+        if self._mermaid_diagram:
+            proc_id = f"Proc.{os.getpid()}"
+            print(f"    {proc_id} ->> {proc_id}: \"process_msg({msg})\"")
+
         METHOD = "SimpleMsgSink.process_msg"
         log_debug(METHOD, "start")
         duration_s = msg["duration_s"]
@@ -49,7 +55,7 @@ class SimpleMsgSink(MsgSink):
 
 
 def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
-                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int):
+                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int, mermaid_diagram: bool):
     """
     Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
     :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
@@ -58,8 +64,9 @@ def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_an
     :param worker_count: number of processes reading messages off the queue and executing/processing them
     :param task_duration_sec: how long will it take to process a message (to simulate io-bound msg processing)
     :param queue_full_max_attempts: "Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception.
+    :param mermaid_diagram: if True, produce a Mermaid-compatible sequence diagram.
     """
     src = SimpleMsgSource(num_of_msg_to_create, task_duration_sec)
-    dst = SimpleMsgSink()
-    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s, queue_full_max_attempts)
+    dst = SimpleMsgSink(mermaid_diagram)
+    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s, queue_full_max_attempts, mermaid_diagram)
     p.process(src, dst, worker_count)
