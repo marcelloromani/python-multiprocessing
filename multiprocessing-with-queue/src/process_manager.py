@@ -23,6 +23,7 @@ class ProcessManager:
     MSG_TYPE_QUIT: str = "QUIT"
 
     def __init__(self, queue_max_size: int, queue_timeout_s: int = 10, queue_full_max_attempts: int = 1,
+                 queue_empty_max_attempts: int = 1,
                  mermaid_diagram: bool = False):
         """
         :param queue_max_size: maximum size of the internal queue
@@ -34,9 +35,10 @@ class ProcessManager:
         self._q = Queue(queue_max_size)
         self._queue_timeout = queue_timeout_s
         self._queue_full_max_attempts = queue_full_max_attempts
+        self._queue_empty_max_attempts = queue_empty_max_attempts
         self._mermaid_diagram = mermaid_diagram
         log_debug(METHOD,
-                  f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s} queue_full_max_attempts: {queue_full_max_attempts}")
+                  f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s} queue_full_max_attempts: {queue_full_max_attempts} queue_empty_max_attempts: {queue_empty_max_attempts}")
 
     def _enqueue_msg(self, q: Queue, msg_type: str, msg: str, timeout: int):
         METHOD: str = "ProcessManager._enqueue_msg"
@@ -61,9 +63,9 @@ class ProcessManager:
                 log_debug(METHOD, f"TimeoutError: {e}")
                 raise e
             except queue.Full as e:
-                log_debug(METHOD, f"queue.Full: {e}")
+                log_debug(METHOD, f"queue.Full: {e} attempts: {attempts}")
                 if attempts < self._queue_full_max_attempts:
-                    log_debug(METHOD, "Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+                    log_debug(METHOD, f"Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
 
                     if self._mermaid_diagram:
                         proc_id = f"Proc.{os.getpid()}"
@@ -79,22 +81,40 @@ class ProcessManager:
     def _dequeue_msg(self, q: Queue, timeout: int):
         METHOD: str = "ProcessManager._dequeue_msg"
 
-        try:
-            log_debug(METHOD, "trying to dequeue message")
-            msg_type, msg = q.get(block=True, timeout=timeout)
+        # how many times should we try to dequeue a message if the queue is empty?
+        WAIT_BEFORE_NEXT_ATTEMPT_S: float = 1
+        attempts: int = 0
 
-            if self._mermaid_diagram:
-                proc_id = f"Proc.{os.getpid()}"
-                print(f"    Queue ->> {proc_id}: \"{msg_type} {msg}\"")
+        while attempts < self._queue_empty_max_attempts:
+            try:
+                attempts += 1
+                log_debug(METHOD, "trying to dequeue message")
+                msg_type, msg = q.get(block=True, timeout=timeout)
 
-            log_debug(METHOD, f"dequeued {msg_type} {msg}")
-            return msg_type, msg
-        except TimeoutError as e:
-            log_debug(METHOD, f"TimeoutError: {e}")
-            raise e
-        except queue.Empty as e:
-            log_debug(METHOD, f"queue.Empty: {e}")
-            raise e
+                if self._mermaid_diagram:
+                    proc_id = f"Proc.{os.getpid()}"
+                    print(f"    Queue ->> {proc_id}: \"{msg_type} {msg}\"")
+
+                log_debug(METHOD, f"dequeued {msg_type} {msg}")
+                return msg_type, msg
+            except TimeoutError as e:
+                log_debug(METHOD, f"TimeoutError: {e}")
+                raise e
+            except queue.Empty as e:
+                log_debug(METHOD, f"queue.Empty: {e} attempts: {attempts}")
+                if attempts < self._queue_empty_max_attempts:
+                    log_debug(METHOD, f"Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+
+                    if self._mermaid_diagram:
+                        proc_id = f"Proc.{os.getpid()}"
+                        print(f"    {proc_id} ->> {proc_id}: queueEmpty")
+
+                    sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
+                else:
+                    raise e
+            except Exception as e:
+                log_debug(METHOD, f"Exception: {e}")
+                raise e
 
     def process(self, msg_source: MsgSource, msg_sink: MsgSink, worker_count: int):
         if self._mermaid_diagram:

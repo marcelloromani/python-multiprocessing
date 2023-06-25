@@ -50,6 +50,13 @@ def opt_setup():
     )
 
     parser.add_argument(
+        "--queue-empty-max-attempts",
+        type=int,
+        default=1,
+        help="Try these many times to extract a message from the queue in the face o 'queue Empty' errors before raising a queue Empty exception."
+    )
+
+    parser.add_argument(
         "--mermaid-diagram",
         action="store_true",
         default=False,
@@ -71,6 +78,7 @@ def main():
         worker_count=args.worker_count,
         task_duration_sec=args.task_duration_sec,
         queue_full_max_attempts=args.queue_full_max_attempts,
+        queue_empty_max_attempts=args.queue_empty_max_attempts,
         mermaid_diagram=args.mermaid_diagram,
     )
     t_end = perf_counter_ns()

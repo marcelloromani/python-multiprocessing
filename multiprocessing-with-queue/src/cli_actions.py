@@ -17,6 +17,7 @@ class SimpleMsgSource(MsgSource):
 
     def get_msg(self):
         log_debug("SimpleMsgSource.get_msg", "")
+        sleep(5)
         for i in range(self._n):
             yield self.create_msg(i)
 
@@ -55,7 +56,7 @@ class SimpleMsgSink(MsgSink):
 
 
 def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
-                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int, mermaid_diagram: bool):
+                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int, queue_empty_max_attempts: int, mermaid_diagram: bool):
     """
     Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
     :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
@@ -63,10 +64,11 @@ def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_an
     :param queue_get_and_put_timeout_s: q.put() and q.get() operations will wait at most these many seconds before timing out
     :param worker_count: number of processes reading messages off the queue and executing/processing them
     :param task_duration_sec: how long will it take to process a message (to simulate io-bound msg processing)
-    :param queue_full_max_attempts: "Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception.
+    :param queue_full_max_attempts: Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception.
+    :param queue_empty_max_attempts: Try these many times to extract a message from the queue in the face o 'queue Empty' errors before raising a queue Empty exception
     :param mermaid_diagram: if True, produce a Mermaid-compatible sequence diagram.
     """
     src = SimpleMsgSource(num_of_msg_to_create, task_duration_sec)
     dst = SimpleMsgSink(mermaid_diagram)
-    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s, queue_full_max_attempts, mermaid_diagram)
+    p = ProcessManager(queue_max_size, queue_get_and_put_timeout_s, queue_full_max_attempts, queue_empty_max_attempts, mermaid_diagram)
     p.process(src, dst, worker_count)
