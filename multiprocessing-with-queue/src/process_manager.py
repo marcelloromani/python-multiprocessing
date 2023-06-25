@@ -69,7 +69,7 @@ class ProcessManager:
 
                     if self._mermaid_diagram:
                         proc_id = f"Proc.{os.getpid()}"
-                        print(f"    {proc_id} ->> {proc_id}: queueFull")
+                        print(f"    {proc_id} ->> {proc_id}: queueFull({attempts})")
 
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
@@ -104,7 +104,7 @@ class ProcessManager:
 
                     if self._mermaid_diagram:
                         proc_id = f"Proc.{os.getpid()}"
-                        print(f"    {proc_id} ->> {proc_id}: queueEmpty")
+                        print(f"    {proc_id} ->> {proc_id}: queueEmpty({attempts})")
 
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
@@ -132,8 +132,19 @@ class ProcessManager:
         self._enqueue_msg(self._q, self.MSG_TYPE_QUIT, "", self._queue_timeout)
 
         for p in workers:
-            log_debug(METHOD, "Joining worker process")
+            log_debug(METHOD, f"Joining worker process {p.pid}")
+
+            if self._mermaid_diagram:
+                proc_id = f"Proc.{os.getpid()}"
+                worker_id = f"Proc.{p.pid}"
+                print(f"    {proc_id} ->> {worker_id}: p.Join")
+
             p.join()
+
+            if self._mermaid_diagram:
+                proc_id = f"Proc.{os.getpid()}"
+                worker_id = f"Proc.{p.pid}"
+                print(f"    {worker_id} ->> {proc_id}: p.Join")
 
         log_debug(METHOD, "end")
 
