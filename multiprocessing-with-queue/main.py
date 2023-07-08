@@ -1,7 +1,9 @@
+import logging
 from argparse import ArgumentParser
 from time import perf_counter_ns
 
 from src.cli_actions import message_factory
+from src.log import log_setup
 
 
 def opt_setup():
@@ -63,12 +65,22 @@ def opt_setup():
         help="Output a mermaid-compatible sequence diagram."
     )
 
+    parser.add_argument(
+        "--log-level",
+        type=str,
+        choices=["DEBUG", "INFO", "ERROR"],
+        default="INFO",
+        help="Set log level"
+    )
+
     return parser
 
 
 def main():
     parser = opt_setup()
     args = parser.parse_args()
+
+    log_setup(logging.getLevelName(args.log_level))
 
     t_start = perf_counter_ns()
     message_factory(
@@ -80,6 +92,7 @@ def main():
         queue_full_max_attempts=args.queue_full_max_attempts,
         queue_empty_max_attempts=args.queue_empty_max_attempts,
         mermaid_diagram=args.mermaid_diagram,
+        log_level=logging.getLevelName(args.log_level),
     )
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000

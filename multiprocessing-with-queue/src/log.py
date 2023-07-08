@@ -1,12 +1,12 @@
-import os
-from datetime import datetime
-
-LOG_ENABLED = False
+import logging
+import sys
 
 
-def log_debug(f: str, msg: str):
-    if not LOG_ENABLED:
-        return
-    t = datetime.now()
-    pid = os.getpid()
-    print(f"{t} [DEBUG] [{pid}] {f} {msg}")
+def log_setup(log_level):
+    root_logger = logging.getLogger()
+    root_logger.setLevel(log_level)
+
+    log_handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] - %(name)s(%(process)d).%(funcName)s - %(message)s')
+    log_handler.setFormatter(formatter)
+    root_logger.addHandler(log_handler)
