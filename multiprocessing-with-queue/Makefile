@@ -9,7 +9,7 @@ requirements: venv
 	. venv/bin/activate && pip install -r requirements.txt
 
 lint: requirements
-	pylint `git ls-files '*.py'`
+	. venv/bin/activate && pylint `git ls-files '*.py'`
 
 test: requirements
 	. venv/bin/activate && pytest --cov=main.py --cov=src --cov-report=html .
