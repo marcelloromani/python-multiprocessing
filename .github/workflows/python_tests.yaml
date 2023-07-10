@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.10"]
+        subproject: ["multiprocessing-with-queue"]
     steps:
       - uses: actions/checkout@v3
 
@@ -18,8 +19,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Lint
+      - name: Lint ${{ matrix.subproject }}
+        working-directory: ${{ matrix.subproject }}
         run: make lint
 
-      - name: Test
+      - name: Test ${{ matrix.subproject }}
+        working-directory: ${{ matrix.subproject }}
         run: make test
