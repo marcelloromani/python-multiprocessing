@@ -48,14 +48,14 @@ def opt_setup():
         "--queue-full-max-attempts",
         type=int,
         default=1,
-        help="Try these many times to put a message in the queue in the face o 'queue Full' errors before raising a queue Full exception."
+        help="Try these many times to put a message in the queue in the face of 'queue Full' errors before raising a queue Full exception."
     )
 
     parser.add_argument(
         "--queue-empty-max-attempts",
         type=int,
         default=1,
-        help="Try these many times to extract a message from the queue in the face o 'queue Empty' errors before raising a queue Empty exception."
+        help="Try these many times to extract a message from the queue in the face of 'queue Empty' errors before raising a queue Empty exception."
     )
 
     parser.add_argument(
