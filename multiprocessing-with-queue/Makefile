@@ -1,4 +1,4 @@
-.PHONY: test requirements help
+.PHONY: test lint requirements help
 .DEFAULT_GOAL=help
 .NOTPARALLEL:
 
