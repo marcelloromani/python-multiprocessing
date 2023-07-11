@@ -1,3 +1,5 @@
+"""Experiment with Python multiprocessing module"""
+
 import logging
 from argparse import ArgumentParser
 from time import perf_counter_ns
@@ -7,6 +9,8 @@ from src.log import log_setup
 
 
 def opt_setup():
+    """Configure command-line options"""
+
     parser = ArgumentParser()
 
     parser.add_argument(
@@ -48,14 +52,14 @@ def opt_setup():
         "--queue-full-max-attempts",
         type=int,
         default=1,
-        help="Try these many times to put a message in the queue in the face of 'queue Full' errors before raising a queue Full exception."
+        help="Retry when queue is full before raising queue full exception"
     )
 
     parser.add_argument(
         "--queue-empty-max-attempts",
         type=int,
         default=1,
-        help="Try these many times to extract a message from the queue in the face of 'queue Empty' errors before raising a queue Empty exception."
+        help="Retry when queue is empty before raising queue empty exception"
     )
 
     parser.add_argument(
@@ -77,9 +81,15 @@ def opt_setup():
 
 
 def main():
+    """Program entry point"""
+
+    # Instantiate argument parser
     parser = opt_setup()
+
+    # Get command line arguments
     args = parser.parse_args()
 
+    # Configure logging library
     log_setup(logging.getLevelName(args.log_level))
 
     t_start = perf_counter_ns()
