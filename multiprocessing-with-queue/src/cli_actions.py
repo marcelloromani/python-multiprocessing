@@ -20,7 +20,7 @@ class SimpleMsgSource(MsgSource):
         :param msg_count: how many messages to produce
         :param task_duration_s: dummy task duration (seconds)
         """
-        self.logger.debug(f"n={msg_count} task_duration={task_duration_s}")
+        self.logger.debug("n=%d task_duration=%d", msg_count, task_duration_s)
         self._msg_count = msg_count
         self._task_duration_s = task_duration_s
 
@@ -36,7 +36,7 @@ class SimpleMsgSource(MsgSource):
         :param i: message index
         :return: dict
         """
-        self.logger.debug(f"Creating message {i}")
+        self.logger.debug("Creating message %d", i)
         return {
             "duration_s": self._task_duration_s,
             "msg_id": i,
@@ -54,12 +54,12 @@ class SimpleMsgSink(MsgSink):
         :param mermaid_diagram: if True, print directives to create a Mermaid sequence diagram
         """
         self.logger.debug("Constructor")
-        self._processed_message = 0
+        self._processed_message_count = 0
         self._mermaid_diagram = mermaid_diagram
 
     def __del__(self):
         """Log object deletion"""
-        self.logger.debug(f"Destructor: Processed {self._processed_message} messages")
+        self.logger.debug("Destructor: Processed %d messages", self._processed_message_count)
 
     def process_msg(self, msg):
         """
@@ -71,10 +71,10 @@ class SimpleMsgSink(MsgSink):
             proc_id = f"Proc.{os.getpid()}"
             print(f"    {proc_id} ->> {proc_id}: \"process_msg({msg})\"")
 
-        self.logger.debug(f"Processing {msg}")
+        self.logger.debug("Processing %d", msg)
         duration_s = msg["duration_s"]
         sleep(duration_s)
-        self._processed_message += 1
+        self._processed_message_count += 1
 
         self.logger.debug("End")
 
