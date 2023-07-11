@@ -1,8 +1,13 @@
+"""Opinionated logging configuration"""
+
 import logging
 import sys
 
 
 def log_setup(log_level):
+    """
+    Configure log formatter and set log level.
+    """
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
 
