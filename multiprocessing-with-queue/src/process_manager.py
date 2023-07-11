@@ -43,7 +43,12 @@ class ProcessManager:
         self._log_level = log_level
 
         self.logger.debug(
-            f"queue_max_size: {queue_max_size} queue_timeout_s: {queue_timeout_s} queue_full_max_attempts: {queue_full_max_attempts} queue_empty_max_attempts: {queue_empty_max_attempts}")
+            "queue_max_size: %d queue_timeout_s: %d queue_full_max_attempts: %d queue_empty_max_attempts: %d",
+            queue_max_size,
+            queue_timeout_s,
+            queue_full_max_attempts,
+            queue_empty_max_attempts,
+        )
 
     def _enqueue_msg(self, q: Queue, msg_type: str, msg: str, timeout: int):
         # how many times should we try to enqueue a message if the queue is full?
@@ -53,22 +58,22 @@ class ProcessManager:
         while attempts < self._queue_full_max_attempts:
             try:
                 attempts += 1
-                self.logger.debug(f"Trying to enqueue {msg_type} {msg} attempts={attempts}")
+                self.logger.debug("Trying to enqueue %s %s attempts=%d", msg_type, msg, attempts)
                 q.put((msg_type, msg), block=True, timeout=timeout)
 
                 if self._mermaid_diagram:
                     proc_id = f"Proc.{os.getpid()}"
                     print(f"    {proc_id} ->> Queue: \"{msg_type} {msg}\"")
 
-                self.logger.debug(f"Enqueued {msg_type} {msg}")
+                self.logger.debug(f"Enqueued %s %s", msg_type, msg)
                 break
-            except TimeoutError as e:
-                self.logger.error(f"TimeoutError: {e}")
-                raise e
-            except queue.Full as e:
-                self.logger.debug(f"queue.Full: {e} attempts: {attempts}")
+            except TimeoutError as ex:
+                self.logger.error("TimeoutError: %s", ex)
+                raise
+            except queue.Full as ex:
+                self.logger.debug("queue.Full: %s attempts: %d", ex, attempts)
                 if attempts < self._queue_full_max_attempts:
-                    self.logger.debug(f"Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+                    self.logger.debug("Sleeping %d sec before next attempt", WAIT_BEFORE_NEXT_ATTEMPT_S)
 
                     if self._mermaid_diagram:
                         proc_id = f"Proc.{os.getpid()}"
@@ -76,7 +81,7 @@ class ProcessManager:
 
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
-                    raise e
+                    raise
 
     def _dequeue_msg(self, q: Queue, timeout: int):
         # how many times should we try to dequeue a message if the queue is empty?
@@ -86,22 +91,22 @@ class ProcessManager:
         while attempts < self._queue_empty_max_attempts:
             try:
                 attempts += 1
-                self.logger.debug(f"trying to dequeue message")
+                self.logger.debug("trying to dequeue message")
                 msg_type, msg = q.get(block=True, timeout=timeout)
 
                 if self._mermaid_diagram:
                     proc_id = f"Proc.{os.getpid()}"
                     print(f"    Queue ->> {proc_id}: \"{msg_type} {msg}\"")
 
-                self.logger.debug(f"dequeued {msg_type} {msg}")
+                self.logger.debug("dequeued %s %s", msg_type, msg)
                 return msg_type, msg
-            except TimeoutError as e:
-                self.logger.error(f"TimeoutError: {e}")
-                raise e
-            except queue.Empty as e:
-                self.logger.debug(f"queue.Empty: {e} attempts: {attempts}")
+            except TimeoutError as ex:
+                self.logger.error("TimeoutError: %s", ex)
+                raise
+            except queue.Empty as ex:
+                self.logger.debug("queue.Empty: %s attempts: %d", ex, attempts)
                 if attempts < self._queue_empty_max_attempts:
-                    self.logger.debug(f"Sleeping {WAIT_BEFORE_NEXT_ATTEMPT_S} sec before next attempt")
+                    self.logger.debug("Sleeping %d sec before next attempt", WAIT_BEFORE_NEXT_ATTEMPT_S)
 
                     if self._mermaid_diagram:
                         proc_id = f"Proc.{os.getpid()}"
@@ -109,7 +114,7 @@ class ProcessManager:
 
                     sleep(WAIT_BEFORE_NEXT_ATTEMPT_S)
                 else:
-                    raise e
+                    raise
 
     def process(self, msg_source: MsgSource, msg_sink: MsgSink, worker_count: int):
         self.logger.debug("start")
@@ -120,7 +125,7 @@ class ProcessManager:
         # create worker pool
         workers = []
         for i in range(worker_count):
-            self.logger.debug(f"Creating worker process {i}")
+            self.logger.debug("Creating worker process %d", i)
             p = Process(target=self._dequeue_and_process_msg, args=(msg_sink,))
             workers.append(p)
             p.start()
@@ -131,7 +136,7 @@ class ProcessManager:
         self._enqueue_msg(self._q, self.MSG_TYPE_QUIT, "", self._queue_timeout)
 
         for p in workers:
-            self.logger.debug(f"Joining worker process {p.pid}")
+            self.logger.debug("Joining worker process %d", p.pid)
 
             if self._mermaid_diagram:
                 proc_id = f"Proc.{os.getpid()}"
@@ -163,10 +168,10 @@ class ProcessManager:
             if msg_type:
                 if msg_type == self.MSG_TYPE_USER:
                     try:
-                        self.logger.debug(f"processing {msg_type} {msg}")
+                        self.logger.debug("processing %s %s", msg_type, msg)
                         msg_sink.process_msg(msg)
-                    except Exception as e:
-                        self.logger.debug(f"Error while processing message: {e}")
+                    except Exception as ex:
+                        self.logger.debug("Error while processing message: %s", ex)
                 elif msg_type == self.MSG_TYPE_QUIT:
                     self._enqueue_msg(self._q, self.MSG_TYPE_QUIT, "", self._queue_timeout)
                     terminate = True
