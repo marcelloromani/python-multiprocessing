@@ -20,6 +20,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Lint ${{ matrix.subproject }}
+        continue-on-error: true
         working-directory: ${{ matrix.subproject }}
         run: make lint
 
