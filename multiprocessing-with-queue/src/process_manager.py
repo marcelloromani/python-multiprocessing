@@ -78,7 +78,7 @@ class ProcessManager:
             except TimeoutError as ex:
                 self.logger.error("TimeoutError: %s", ex)
                 raise
-            except msg_queue.Full as ex:
+            except queue.Full as ex:
                 self.logger.debug("queue.Full: %s attempts: %d", ex, attempts)
                 if attempts < self._queue_full_max_attempts:
                     self.logger.debug("Sleeping %d sec before next attempt", WAIT_BEFORE_NEXT_ATTEMPT_S)
@@ -111,7 +111,7 @@ class ProcessManager:
             except TimeoutError as ex:
                 self.logger.error("TimeoutError: %s", ex)
                 raise
-            except msg_queue.Empty as ex:
+            except queue.Empty as ex:
                 self.logger.debug("queue.Empty: %s attempts: %d", ex, attempts)
                 if attempts < self._queue_empty_max_attempts:
                     self.logger.debug("Sleeping %d sec before next attempt", WAIT_BEFORE_NEXT_ATTEMPT_S)
