@@ -100,6 +100,19 @@ class TestCountMsgSink:
         assert s.processed_msg_count == 5
 
 
+class TestMsgBaseClasses:
+
+    def test_msg_source_is_abstract(self):
+        with pytest.raises(NotImplementedError):
+            s = MsgSource()
+            s.get_msg()
+
+    def test_msg_sink_is_abstract(self):
+        with pytest.raises(NotImplementedError):
+            s = MsgSink()
+            s.process_msg({})
+
+
 class TestProcessManager:
 
     def test_one_msg_one_producer(self):
@@ -114,16 +127,3 @@ class TestProcessManager:
         pm = ProcessManager(queue_max_size=1, queue_timeout_s=0)
         with pytest.raises(queue.Full):
             pm.process(src, dest, worker_count=1)
-
-
-class TestMsgBaseClasses:
-
-    def test_msg_source_is_abstract(self):
-        with pytest.raises(NotImplementedError):
-            s = MsgSource()
-            s.get_msg()
-
-    def test_msg_sink_is_abstract(self):
-        with pytest.raises(NotImplementedError):
-            s = MsgSink()
-            s.process_msg({})
