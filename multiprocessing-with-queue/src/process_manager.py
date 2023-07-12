@@ -1,3 +1,6 @@
+"""
+Connects a message source and a number of message sinks through a queue.
+"""
 import logging
 import os
 import queue
@@ -73,7 +76,7 @@ class ProcessManager:
                     proc_id = f"Proc.{os.getpid()}"
                     print(f"    {proc_id} ->> Queue: \"{msg_type} {msg}\"")
 
-                self.logger.debug(f"Enqueued %s %s", msg_type, msg)
+                self.logger.debug("Enqueued %s %s", msg_type, msg)
                 break
             except TimeoutError as ex:
                 self.logger.error("TimeoutError: %s", ex)
