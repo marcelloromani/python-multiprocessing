@@ -8,22 +8,7 @@ from multiprocessing import Queue, Process
 from time import sleep
 
 from src.log import log_setup
-
-
-class MsgSource:
-    """Message Source (producer) interface"""
-
-    def get_msg(self):
-        """Yield all messages"""
-        raise NotImplementedError()
-
-
-class MsgSink:
-    """Message Sinck (consumer) interface"""
-
-    def process_msg(self, msg):
-        """Process a single message"""
-        raise NotImplementedError()
+from .interfaces import MsgProducer, MsgConsumer
 
 
 class ProcessManager:
@@ -128,7 +113,7 @@ class ProcessManager:
                     raise
         raise RuntimeError(f"Dequeue failed after {attempts} attempts")
 
-    def process(self, msg_source: MsgSource, msg_sink: MsgSink, worker_count: int):
+    def process(self, msg_source: MsgProducer, msg_sink: MsgConsumer, worker_count: int):
         self.logger.debug("start")
 
         if self._mermaid_diagram:
@@ -142,7 +127,7 @@ class ProcessManager:
             workers.append(worker_process)
             worker_process.start()
 
-        for msg in msg_source.get_msg():
+        for msg in msg_source.yield_msg():
             self._enqueue_msg(self._q, self.MSG_TYPE_USER, msg, self._queue_timeout)
 
         self._enqueue_msg(self._q, self.MSG_TYPE_QUIT, "", self._queue_timeout)
@@ -166,7 +151,7 @@ class ProcessManager:
 
         self.logger.debug("end")
 
-    def _dequeue_and_process_msg(self, msg_sink: MsgSink):
+    def _dequeue_and_process_msg(self, msg_sink: MsgConsumer):
         # we're on a new process, sys.stdout is different from our parent process
         log_setup(self._log_level)
         self.logger = logging.getLogger("Dequeuer")

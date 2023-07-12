@@ -4,16 +4,16 @@ import logging
 import os
 from time import sleep
 
-from src.process_manager import MsgSource, MsgSink
+from src.process_manager import MsgProducer, MsgConsumer
 from src.process_manager import ProcessManager
 
 
-class SimpleMsgSource(MsgSource):
+class SimpleMsgProducer(MsgProducer):
     """
     Creates simple messages containing a timeout indication
     to simulate real workloads taking some time
     """
-    logger = logging.getLogger("SimpleMsgSource")
+    logger = logging.getLogger("SimpleMsgProducer")
 
     def __init__(self, msg_count: int, task_duration_s: float):
         """
@@ -24,7 +24,7 @@ class SimpleMsgSource(MsgSource):
         self._msg_count = msg_count
         self._task_duration_s = task_duration_s
 
-    def get_msg(self):
+    def yield_msg(self):
         # TODO: rename to get_messages() for more clarity
         self.logger.debug("starting to produce messages")
         for i in range(self._msg_count):
@@ -43,11 +43,11 @@ class SimpleMsgSource(MsgSource):
         }
 
 
-class SimpleMsgSink(MsgSink):
+class SimpleMsgConsumer(MsgConsumer):
     """
     Consume messages by SimpleMsgSource by waiting for the number of seconds specified in the message body.
     """
-    logger = logging.getLogger('SimpleMsgSink')
+    logger = logging.getLogger('SimpleMsgConsumer')
 
     def __init__(self, mermaid_diagram: bool = False):
         """
@@ -94,8 +94,8 @@ def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_an
     :param mermaid_diagram: if True, produce a Mermaid-compatible sequence diagram.
     :param log_level: logging-compatible log level
     """
-    src = SimpleMsgSource(num_of_msg_to_create, task_duration_sec)
-    dst = SimpleMsgSink(mermaid_diagram)
+    src = SimpleMsgProducer(num_of_msg_to_create, task_duration_sec)
+    dst = SimpleMsgConsumer(mermaid_diagram)
     proc_mgr = ProcessManager(
         queue_max_size,
         queue_get_and_put_timeout_s,
