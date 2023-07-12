@@ -58,8 +58,6 @@ class ProcessManager:
             queue_empty_max_attempts,
         )
 
-    def add_init_listener(self, callback: func):
-
     def _enqueue_msg(self, msg_queue: Queue, msg_type: str, msg: str, timeout: int):
         # how many times should we try to enqueue a message if the queue is full?
         WAIT_BEFORE_NEXT_ATTEMPT_S: float = 1

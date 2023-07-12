@@ -127,14 +127,3 @@ class TestProcessManager:
         pm = ProcessManager(queue_max_size=1, queue_timeout_s=0)
         with pytest.raises(queue.Full):
             pm.process(src, dest, worker_count=1)
-
-    def _should_be_a_mock(self):
-        self._called = True
-
-    def test_should_call_init_handler(self):
-        src = CountMsgSource(1)
-        dest = CountMsgSink()
-        pm = ProcessManager(queue_max_size=1, queue_timeout_s=0)
-        pm.add_init_listener(self._should_be_a_mock())
-        pm.process(src, dest, worker_count=1)
-        assert self._called
