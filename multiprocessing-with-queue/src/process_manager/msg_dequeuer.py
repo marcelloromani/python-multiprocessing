@@ -7,7 +7,7 @@ from time import sleep
 class MsgDequeuer:
     logger = logging.getLogger()
 
-    def __init__(self, timeout: int, max_attempts: int, wait_between_attempts: float):
+    def __init__(self, timeout: float = 0, max_attempts: int = 1, wait_between_attempts: float = 0):
         """
         :param timeout: queue.get(): how long to wait before timing out
         :param max_attempts: how many times to retry on timeout
