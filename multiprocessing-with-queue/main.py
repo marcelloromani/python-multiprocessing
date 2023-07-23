@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from time import perf_counter_ns
 
 from src.cli_actions import message_factory
+from src.config import Config
 from src.log import log_setup
 
 
@@ -21,21 +22,28 @@ def opt_setup():
     )
 
     parser.add_argument(
-        "--queue-size",
+        "--queue-max-size",
         type=int,
         default=1,
         help="Maximum number of messages the queue can hold at any given time."
     )
 
     parser.add_argument(
-        "--queue-timeout-sec",
+        "--queue-put-timeout-sec",
         type=int,
         default=1,
-        help="get() and put() on the queue will wait at most these many seconds before timing out"
+        help="put() on the queue will wait at most these many seconds before timing out"
     )
 
     parser.add_argument(
-        "--worker-count",
+        "--queue-get-timeout-sec",
+        type=int,
+        default=1,
+        help="get() on the queue will wait at most these many seconds before timing out"
+    )
+
+    parser.add_argument(
+        "--consumer-count",
         type=int,
         default=1,
         help="Number of processes reading messages from the queue and processing them"
@@ -106,19 +114,11 @@ def main():
     # Configure logging library
     log_setup(logging.getLevelName(args.log_level))
 
+    config = Config.from_argparser_args(args)
+    config.log_values()
+
     t_start = perf_counter_ns()
-    message_factory(
-        num_of_msg_to_create=args.msg_count,
-        task_duration_sec=args.task_duration_sec,
-        queue_max_size=args.queue_size,
-        consumer_count=args.worker_count,
-        queue_put_timeout_s=args.queue_timeout_sec,
-        queue_full_max_attempts=args.queue_full_max_attempts,
-        queue_full_wait_s=args.queue_full_wait_sec,
-        queue_get_timeout_s=args.queue_timeout_sec,
-        queue_empty_max_attempts=args.queue_empty_max_attempts,
-        queue_empty_wait_s=args.queue_empty_wait_sec,
-    )
+    message_factory(config)
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000
     logger.info("Elapsed: %s", t_elapsed_sec)
