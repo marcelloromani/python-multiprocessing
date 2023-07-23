@@ -111,5 +111,5 @@ def message_factory(
     enqueuer = MsgEnqueuer(queue_put_timeout_s, queue_full_max_attempts, queue_full_wait_s)
     dequeuer = MsgDequeuer(queue_get_timeout_s, queue_empty_max_attempts, queue_empty_wait_s)
 
-    proc_mgr = ProcessManager(queue_max_size, enqueuer, dequeuer)
+    proc_mgr = ProcessManager(enqueuer, dequeuer, queue_max_size)
     proc_mgr.process(producer, consumer, consumer_count)
