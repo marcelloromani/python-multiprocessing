@@ -12,7 +12,7 @@ lint: requirements
 	. venv/bin/activate && pylint `git ls-files '*.py'`
 
 test: requirements
-	. venv/bin/activate && pytest -r A -s --cov=main.py --cov=src --cov-report=html .
+	. venv/bin/activate && pytest -r A -s --cov=main --cov=src --cov-report=html
 
 help:
 	@echo "test             Run tests"
