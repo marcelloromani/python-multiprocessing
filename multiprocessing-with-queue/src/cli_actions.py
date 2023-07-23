@@ -4,6 +4,7 @@ import logging
 import os
 from time import sleep
 
+from src.process_manager import MsgEnqueuer, MsgDequeuer
 from src.process_manager import MsgProducer, MsgConsumer
 from src.process_manager import ProcessManager
 
@@ -71,7 +72,7 @@ class SimpleMsgConsumer(MsgConsumer):
             proc_id = f"Proc.{os.getpid()}"
             print(f"    {proc_id} ->> {proc_id}: \"process_msg({msg})\"")
 
-        self.logger.debug("Processing %d", msg)
+        self.logger.debug("Processing %s", msg)
         duration_s = msg["duration_s"]
         sleep(duration_s)
         self._processed_message_count += 1
@@ -79,29 +80,36 @@ class SimpleMsgConsumer(MsgConsumer):
         self.logger.debug("End")
 
 
-def message_factory(num_of_msg_to_create: int, queue_max_size: int, queue_get_and_put_timeout_s: int,
-                    worker_count: int, task_duration_sec: float, queue_full_max_attempts: int,
-                    queue_empty_max_attempts: int, mermaid_diagram: bool, log_level: int):
+def message_factory(
+        num_of_msg_to_create: int,
+        task_duration_sec: float,
+        queue_max_size: int,
+        consumer_count: int,
+        queue_put_timeout_s: float,
+        queue_full_max_attempts: int,
+        queue_full_wait_s: float,
+        queue_get_timeout_s: int,
+        queue_empty_max_attempts: int,
+        queue_empty_wait_s: float,
+):
     """
     Creates and run the whole "message producer / queue / consumers" setup based on the provided parameters
     :param num_of_msg_to_create: the producer will create and (try to) enqueue this many messages before terminating
-    :param queue_max_size: maximum number of messages the queue can hold at any given time
-    :param queue_get_and_put_timeout_s: q.put() and q.get() will wait at most these many seconds before timing out
-    :param worker_count: number of processes reading messages off the queue and executing/processing them
     :param task_duration_sec: how long will it take to process a message (to simulate io-bound msg processing)
+    :param queue_max_size: maximum number of messages the queue can hold at any given time
+    :param consumer_count: number of processes reading messages off the queue and executing/processing them
+    :param queue_put_timeout_s: q.put() will wait this much before timing out
     :param queue_full_max_attempts: Retry when queue is full before raising queue full exception
+    :param queue_full_wait_s: when queue is full, wait this much before retrying
+    :param queue_get_timeout_s: q.get() will wait this much before timing out
     :param queue_empty_max_attempts: Retry when queue is empty before raising queue empty exception
-    :param mermaid_diagram: if True, produce a Mermaid-compatible sequence diagram.
-    :param log_level: logging-compatible log level
+    :param queue_empty_wait_s: when queue is empty, wait this much before retrying
     """
-    src = SimpleMsgProducer(num_of_msg_to_create, task_duration_sec)
-    dst = SimpleMsgConsumer(mermaid_diagram)
-    proc_mgr = ProcessManager(
-        queue_max_size,
-        queue_get_and_put_timeout_s,
-        queue_full_max_attempts,
-        queue_empty_max_attempts,
-        mermaid_diagram,
-        log_level
-    )
-    proc_mgr.process(src, dst, worker_count)
+    producer = SimpleMsgProducer(num_of_msg_to_create, task_duration_sec)
+    consumer = SimpleMsgConsumer()
+
+    enqueuer = MsgEnqueuer(queue_put_timeout_s, queue_full_max_attempts, queue_full_wait_s)
+    dequeuer = MsgDequeuer(queue_get_timeout_s, queue_empty_max_attempts, queue_empty_wait_s)
+
+    proc_mgr = ProcessManager(queue_max_size, enqueuer, dequeuer)
+    proc_mgr.process(producer, consumer, consumer_count)
