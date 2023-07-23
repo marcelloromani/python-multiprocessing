@@ -1,7 +1,6 @@
 """Implementation of actions routed from CLI options in main.py"""
 
 import logging
-import os
 from time import sleep
 
 from src.process_manager import MsgEnqueuer, MsgDequeuer
@@ -26,7 +25,6 @@ class SimpleMsgProducer(MsgProducer):
         self._task_duration_s = task_duration_s
 
     def yield_msg(self):
-        # TODO: rename to get_messages() for more clarity
         self.logger.debug("starting to produce messages")
         for i in range(self._msg_count):
             yield self.create_msg(i)
@@ -50,13 +48,9 @@ class SimpleMsgConsumer(MsgConsumer):
     """
     logger = logging.getLogger('SimpleMsgConsumer')
 
-    def __init__(self, mermaid_diagram: bool = False):
-        """
-        :param mermaid_diagram: if True, print directives to create a Mermaid sequence diagram
-        """
+    def __init__(self):
         self.logger.debug("Constructor")
         self._processed_message_count = 0
-        self._mermaid_diagram = mermaid_diagram
 
     def __del__(self):
         """Log object deletion"""
@@ -67,10 +61,6 @@ class SimpleMsgConsumer(MsgConsumer):
         Process the specified message.
         """
         self.logger.debug("Start")
-
-        if self._mermaid_diagram:
-            proc_id = f"Proc.{os.getpid()}"
-            print(f"    {proc_id} ->> {proc_id}: \"process_msg({msg})\"")
 
         self.logger.debug("Processing %s", msg)
         duration_s = msg["duration_s"]
