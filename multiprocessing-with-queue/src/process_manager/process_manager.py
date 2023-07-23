@@ -20,7 +20,7 @@ class ProcessManager:
 
     logger = logging.getLogger()
 
-    def __init__(self, queue_max_size: int, enqueuer: MsgEnqueuer, dequeuer: MsgDequeuer):
+    def __init__(self, enqueuer: MsgEnqueuer, dequeuer: MsgDequeuer, queue_max_size: int = 2):
         self._q = Queue(queue_max_size)
         self._enqueuer = enqueuer
         self._dequeuer = dequeuer

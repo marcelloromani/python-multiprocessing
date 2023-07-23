@@ -1,9 +1,14 @@
 import queue
+from multiprocessing import Queue
 from time import sleep
 
 import pytest
 
-from src.process_manager import MsgProducer, MsgConsumer, ProcessManager
+from src.process_manager import MsgConsumer
+from src.process_manager import MsgDequeuer
+from src.process_manager import MsgEnqueuer
+from src.process_manager import MsgProducer
+from src.process_manager import ProcessManager
 
 
 class CountingMsgProducer(MsgProducer):
@@ -100,17 +105,53 @@ class TestCountingMsgConsumer:
         assert s.processed_msg_count == 5
 
 
+class TestMsgDequeuer:
+
+    def test_with_defaults_should_raise_queue_empty_if_no_data(self):
+        q = Queue()
+        obj = MsgDequeuer()
+        with pytest.raises(queue.Empty):
+            _ = obj.get(q)
+
+    def test_should_try_max_attempts_times(self):
+        q = Queue()
+        obj = MsgDequeuer(max_attempts=5)
+        with pytest.raises(queue.Empty):
+            _ = obj.get(q)
+
+
+class TestMsgEnqueuer:
+
+    def test_with_defaults_should_raise_queue_full_if_no_consumers(self):
+        q = Queue(maxsize=1)
+        obj = MsgEnqueuer()
+        obj.put(q, "foo", "first message")
+        with pytest.raises(queue.Full):
+            obj.put(q, "bar", "second messagse")
+
+    def test_should_try_max_attempts_times(self):
+        q = Queue(maxsize=1)
+        obj = MsgEnqueuer(max_attempts=5)
+        obj.put(q, "foo", "first message")
+        with pytest.raises(queue.Full):
+            obj.put(q, "bar", "second messagse")
+
+
 class TestProcessManager:
 
-    def test_one_msg_one_producer(self):
+    def test_should_be_able_to_produce_consume_one_msg_with_default_values(self):
         src = CountingMsgProducer(1)
         dest = CountingMsgConsumer()
-        pm = ProcessManager(queue_max_size=1)
-        pm.process(src, dest, worker_count=1)
+        enqueuer = MsgEnqueuer()
+        dequeuer = MsgDequeuer()
+        pm = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer)
+        pm.process(src, dest, consumer_count=1)
 
     def test_should_raise_queue_full_if_we_fill_the_queue(self):
         src = CountingMsgProducer(1)
         dest = CountingMsgConsumer()
-        pm = ProcessManager(queue_max_size=1, queue_timeout_s=0)
+        enqueuer = MsgEnqueuer()
+        dequeuer = MsgDequeuer()
+        pm = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer, queue_max_size=1)
         with pytest.raises(queue.Full):
-            pm.process(src, dest, worker_count=1)
+            pm.process(src, dest, consumer_count=1)
