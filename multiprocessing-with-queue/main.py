@@ -84,6 +84,12 @@ def opt_setup():
         help="Retry when queue is empty before raising queue empty exception"
     )
 
+    parser.add_argument(
+        "--csv",
+        action="store_true",
+        help="Print data in CSV format."
+    )
+
     # parser.add_argument(
     #     "--mermaid-diagram",
     #     action="store_true",
@@ -122,6 +128,18 @@ def main():
     t_end = perf_counter_ns()
     t_elapsed_sec = (t_end - t_start) / 1_000_000_000
     logger.info("Elapsed: %s", t_elapsed_sec)
+
+    if args.csv:
+        csv_headers = config.CONFIG_ITEMS.copy()
+        csv_headers.insert(0, "run_id")
+        csv_headers.append("elapsed")
+        print(",".join(csv_headers))
+
+        csv_row = [config[item] for item in config.CONFIG_ITEMS]
+        csv_row.insert(0, 1)
+        csv_row.append(t_elapsed_sec)
+        csv_row_str = [str(item) for item in csv_row]
+        print(",".join(csv_row_str))
 
 
 if __name__ == "__main__":
