@@ -4,7 +4,7 @@ from box import Box
 
 
 class Config(Box):
-    logger = logging.getLogger()
+    logger = logging.getLogger("Config")
 
     CONFIG_ITEMS = [
         "msg_count",

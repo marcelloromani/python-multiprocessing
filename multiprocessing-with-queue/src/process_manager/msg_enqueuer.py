@@ -5,7 +5,7 @@ from time import sleep
 
 
 class MsgEnqueuer:
-    logger = logging.getLogger()
+    logger = logging.getLogger("MsgEnqueuer")
 
     def __init__(self, timeout: float = 0, max_attempts: int = 1, wait_between_attempts: float = 0):
         """

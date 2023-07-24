@@ -18,7 +18,7 @@ class ProcessManager:
     MSG_TYPE_USER: str = "USER"
     MSG_TYPE_QUIT: str = "QUIT"
 
-    logger = logging.getLogger()
+    logger = logging.getLogger("ProcessManager")
 
     def __init__(self, enqueuer: MsgEnqueuer, dequeuer: MsgDequeuer, queue_max_size: int = 2):
         self._q = Queue(queue_max_size)
@@ -56,7 +56,7 @@ class ProcessManager:
     def _dequeue_and_process_msg(self, consumer: MsgConsumer):
         # we're on a new process, sys.stdout is different from our parent process
         log_setup(self._log_level)
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("DequeueAndProcess")
 
         self.logger.debug("start")
 

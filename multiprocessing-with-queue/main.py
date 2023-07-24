@@ -103,7 +103,7 @@ def opt_setup():
 
 
 def main():
-    logger = logging.getLogger()
+    logger = logging.getLogger("main")
 
     # Instantiate argument parser
     parser = opt_setup()

@@ -7,7 +7,7 @@ from src.log import log_setup
 
 
 class TestLog:
-    logger = logging.getLogger()
+    logger = logging.getLogger("TestLog")
     current_log_level = None
 
     @classmethod

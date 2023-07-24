@@ -47,7 +47,7 @@ class SimpleMsgConsumer(MsgConsumer):
     """
     Consume messages by SimpleMsgSource by waiting for the number of seconds specified in the message body.
     """
-    logger = logging.getLogger('SimpleMsgConsumer')
+    logger = logging.getLogger("SimpleMsgConsumer")
 
     def __init__(self):
         self.logger.debug("Constructor")
@@ -61,14 +61,10 @@ class SimpleMsgConsumer(MsgConsumer):
         """
         Process the specified message.
         """
-        self.logger.debug("Start")
-
         self.logger.debug("Processing %s", msg)
         duration_s = msg["duration_s"]
         sleep(duration_s)
         self._processed_message_count += 1
-
-        self.logger.debug("End")
 
 
 def message_factory(config: Config):
