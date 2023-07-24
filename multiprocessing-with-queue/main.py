@@ -65,14 +65,14 @@ def opt_setup():
 
     parser.add_argument(
         "--queue-full-wait-sec",
-        type=int,
+        type=float,
         default=1,
         help="when queue is full, wait this much before retrying."
     )
 
     parser.add_argument(
         "--queue-empty-wait-sec",
-        type=int,
+        type=float,
         default=1,
         help="when queue is empty, wait this much before retrying."
     )
