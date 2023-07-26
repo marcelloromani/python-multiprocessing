@@ -1,6 +1,7 @@
 """Implementation of actions routed from CLI options in main.py"""
 
 import logging
+from time import perf_counter_ns
 from time import sleep
 
 from src.config import Config
@@ -67,7 +68,29 @@ class SimpleMsgConsumer(MsgConsumer):
         self._processed_message_count += 1
 
 
-def message_factory(config: Config):
+def run_session(config: Config, consumer_min, consumer_max, consumer_step):
+    logger = logging.getLogger("RunSession")
+
+    print_csv_headers(config)
+    for consumer_count in range(consumer_min, consumer_max + 1, consumer_step):
+        config["consumer_count"] = consumer_count
+        t_start = perf_counter_ns()
+        run_single(config)
+        t_end = perf_counter_ns()
+        t_elapsed_sec = (t_end - t_start) / 1_000_000_000
+
+        print_csv_row(config, t_elapsed_sec)
+
+
+def perf_run_single(config: Config) -> float:
+    t_start = perf_counter_ns()
+    run_single(config)
+    t_end = perf_counter_ns()
+    t_elapsed_sec = (t_end - t_start) / 1_000_000_000
+    return t_elapsed_sec
+
+
+def run_single(config: Config):
     producer = SimpleMsgProducer(config.msg_count, config.task_duration_sec)
     consumer = SimpleMsgConsumer()
 
@@ -76,3 +99,18 @@ def message_factory(config: Config):
 
     proc_mgr = ProcessManager(enqueuer, dequeuer, config.queue_max_size)
     proc_mgr.process(producer, consumer, config.consumer_count)
+
+
+def print_csv_headers(config):
+    csv_headers = config.CONFIG_ITEMS.copy()
+    csv_headers.insert(0, "run_id")
+    csv_headers.append("elapsed")
+    print(",".join(csv_headers))
+
+
+def print_csv_row(config: Config, t_elapsed_sec: float):
+    csv_row = [config[item] for item in config.CONFIG_ITEMS]
+    csv_row.insert(0, 1)
+    csv_row.append(t_elapsed_sec)
+    csv_row_str = [str(item) for item in csv_row]
+    print(",".join(csv_row_str))

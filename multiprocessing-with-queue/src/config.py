@@ -19,13 +19,13 @@ class Config(Box):
         "queue_empty_wait_sec",
     ]
 
-    def log_values(self):
-        for item in self.CONFIG_ITEMS:
-            self.logger.info("%s = %s", item, self[item])
-
     @classmethod
     def from_argparser_args(cls, args):
         obj = Config()
         for item in cls.CONFIG_ITEMS:
             obj[item] = eval(f"args.{item}")
         return obj
+
+    def log_values(self):
+        for key in self.CONFIG_ITEMS:
+            self.logger.info("%s = %s", key, self[key])

@@ -2,9 +2,9 @@
 
 import logging
 from argparse import ArgumentParser
-from time import perf_counter_ns
 
-from src.cli_actions import message_factory
+from src.cli_actions import perf_run_single
+from src.cli_actions import run_session
 from src.config import Config
 from src.log import log_setup
 
@@ -50,6 +50,14 @@ def opt_setup():
     )
 
     parser.add_argument(
+        "--consumer-count-perftest",
+        type=int,
+        nargs=3,
+        metavar=('min', 'max', 'step'),
+        help="Perform multiple runs with an increasing number of consumer processes. Print elapsed time in CSV format for easy graphing."
+    )
+
+    parser.add_argument(
         "--task-duration-sec",
         type=float,
         default=0.5,
@@ -84,12 +92,6 @@ def opt_setup():
         help="Retry when queue is empty before raising queue empty exception"
     )
 
-    parser.add_argument(
-        "--csv",
-        action="store_true",
-        help="Print data in CSV format."
-    )
-
     # parser.add_argument(
     #     "--mermaid-diagram",
     #     action="store_true",
@@ -108,19 +110,6 @@ def opt_setup():
     return parser
 
 
-def print_csv(config, t_elapsed_sec):
-    csv_headers = config.CONFIG_ITEMS.copy()
-    csv_headers.insert(0, "run_id")
-    csv_headers.append("elapsed")
-    print(",".join(csv_headers))
-
-    csv_row = [config[item] for item in config.CONFIG_ITEMS]
-    csv_row.insert(0, 1)
-    csv_row.append(t_elapsed_sec)
-    csv_row_str = [str(item) for item in csv_row]
-    print(",".join(csv_row_str))
-
-
 def main():
     logger = logging.getLogger("main")
 
@@ -133,17 +122,20 @@ def main():
     # Configure logging library
     log_setup(logging.getLevelName(args.log_level))
 
-    config = Config.from_argparser_args(args)
-    config.log_values()
+    # TODO see if there's a way to list all options provided to args and log their values
 
-    t_start = perf_counter_ns()
-    message_factory(config)
-    t_end = perf_counter_ns()
-    t_elapsed_sec = (t_end - t_start) / 1_000_000_000
-    logger.info("Elapsed: %s", t_elapsed_sec)
-
-    if args.csv:
-        print_csv(config, t_elapsed_sec)
+    if args.consumer_count_perftest is None:
+        # single run with the specified number of consumer processes
+        config = Config.from_argparser_args(args)
+        config.log_values()
+        elapsed = perf_run_single(config)
+        logger.info("Elapsed: %f", elapsed)
+    else:
+        # multiple run with an increasing number of consumer processes, CSV output
+        config = Config.from_argparser_args(args)
+        config.log_values()
+        consumer_min, consumer_max, consumer_step = args.consumer_count_perftest
+        run_session(config, consumer_min, consumer_max, consumer_step)
 
 
 if __name__ == "__main__":

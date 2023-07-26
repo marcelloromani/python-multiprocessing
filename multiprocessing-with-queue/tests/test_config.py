@@ -50,6 +50,18 @@ class TestConfigBasicFeatures:
         for key in obj.CONFIG_ITEMS:
             assert eval(f"obj.{key}") == 2
 
+
+class TestConfigLogging:
+
+    def test_should_log_values(self):
+        obj = Config()
+        for key in obj.CONFIG_ITEMS:
+            obj[key] = 1
+        obj.log_values()
+
+
+class TestConfigFactory:
+
     def test_can_build_config_obj_from_cli_args(self):
         mock_args = Config()
         for key in mock_args.CONFIG_ITEMS:
