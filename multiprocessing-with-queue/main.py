@@ -15,6 +15,14 @@ def opt_setup():
     parser = ArgumentParser()
 
     parser.add_argument(
+        "--perftest-consumer-count",
+        type=int,
+        nargs=3,
+        metavar=('min', 'max', 'step'),
+        help="Perform multiple runs with an increasing number of consumer processes. Print elapsed time in CSV format for easy graphing."
+    )
+
+    parser.add_argument(
         "--msg-count",
         type=int,
         default=5,
@@ -47,14 +55,6 @@ def opt_setup():
         type=int,
         default=1,
         help="Number of processes reading messages from the queue and processing them"
-    )
-
-    parser.add_argument(
-        "--consumer-count-perftest",
-        type=int,
-        nargs=3,
-        metavar=('min', 'max', 'step'),
-        help="Perform multiple runs with an increasing number of consumer processes. Print elapsed time in CSV format for easy graphing."
     )
 
     parser.add_argument(
@@ -124,7 +124,7 @@ def main():
 
     # TODO see if there's a way to list all options provided to args and log their values
 
-    if args.consumer_count_perftest is None:
+    if args.perftest_consumer_count is None:
         # single run with the specified number of consumer processes
         config = Config.from_argparser_args(args)
         config.log_values()
