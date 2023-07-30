@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Play with Python multiprocessing module"""
 
 import logging
