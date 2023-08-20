@@ -2,9 +2,10 @@ import logging
 import queue
 from multiprocessing import Queue
 from time import sleep
+from .msg_processor import MsgProcessor
 
 
-class MsgDequeuer:
+class MsgDequeuer(MsgProcessor):
     logger = logging.getLogger("MsgDequeuer")
 
     def __init__(self, timeout: float = 0, max_attempts: int = 1, wait_between_attempts: float = 0):
@@ -13,9 +14,7 @@ class MsgDequeuer:
         :param max_attempts: how many times to retry on timeout
         :param wait_between_attempts: before trying another get() after timeout, wait these many seconds
         """
-        self._timeout = timeout
-        self._max_attempts = max_attempts
-        self._wait_between_attempts = wait_between_attempts
+        super().__init__(timeout, max_attempts, wait_between_attempts)
 
     def get(self, msg_queue: Queue) -> (str, str):
         attempts: int = 0
