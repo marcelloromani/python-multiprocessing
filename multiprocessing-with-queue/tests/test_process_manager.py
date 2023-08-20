@@ -144,14 +144,14 @@ class TestProcessManager:
         dest = CountingMsgConsumer()
         enqueuer = MsgEnqueuer()
         dequeuer = MsgDequeuer()
-        pm = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer)
-        pm.process(src, dest, consumer_count=1)
+        proc_mgr = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer)
+        proc_mgr.process(src, dest, consumer_count=1)
 
     def test_should_raise_queue_full_if_we_fill_the_queue(self):
         src = CountingMsgProducer(1)
         dest = CountingMsgConsumer()
         enqueuer = MsgEnqueuer()
         dequeuer = MsgDequeuer()
-        pm = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer, queue_max_size=1)
+        proc_mgr = ProcessManager(enqueuer=enqueuer, dequeuer=dequeuer, queue_max_size=1)
         with pytest.raises(queue.Full):
-            pm.process(src, dest, consumer_count=1)
+            proc_mgr.process(src, dest, consumer_count=1)
