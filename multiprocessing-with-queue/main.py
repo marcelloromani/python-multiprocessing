@@ -135,7 +135,7 @@ def main():
         # multiple run with an increasing number of consumer processes, CSV output
         config = Config.from_argparser_args(args)
         config.log_values()
-        consumer_min, consumer_max, consumer_step = args.consumer_count_perftest
+        consumer_min, consumer_max, consumer_step = args.perftest_consumer_count
         run_session(config, consumer_min, consumer_max, consumer_step)
 
 
