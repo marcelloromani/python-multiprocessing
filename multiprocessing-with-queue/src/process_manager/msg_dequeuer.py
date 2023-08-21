@@ -19,12 +19,12 @@ class MsgDequeuer(MsgProcessor):
     def get(self, msg_queue: Queue) -> (str, str):
         attempts: int = 0
 
-        while attempts < self._max_attempts:
+        while attempts < self.max_attempts:
             try:
                 self.logger.debug("Trying to dequeue message, attempts=%d", attempts)
 
                 attempts += 1
-                msg_type, msg = msg_queue.get(block=True, timeout=self._timeout)
+                msg_type, msg = msg_queue.get(block=True, timeout=self.timeout)
 
                 self.logger.debug("Dequeued %s %s after %d attempts", msg_type, msg, attempts)
                 return msg_type, msg
@@ -34,9 +34,9 @@ class MsgDequeuer(MsgProcessor):
             except queue.Empty as ex:
                 self.logger.debug("queue.Empty: %s attempts: %d", ex, attempts)
 
-                if attempts < self._max_attempts:
-                    self.logger.debug("Sleeping %f sec before next attempt", self._wait_between_attempts)
-                    sleep(self._wait_between_attempts)
+                if attempts < self.max_attempts:
+                    self.logger.debug("Sleeping %f sec before next attempt", self.wait_between_attempts)
+                    sleep(self.wait_between_attempts)
                 else:
-                    self.logger.error("Reached max attempts %d", self._max_attempts)
+                    self.logger.error("Reached max attempts %d", self.max_attempts)
                     raise

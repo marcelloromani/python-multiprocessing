@@ -19,12 +19,12 @@ class MsgEnqueuer(MsgProcessor):
     def put(self, msg_queue: Queue, msg_type: str, msg: str):
         attempts: int = 0
 
-        while attempts < self._max_attempts:
+        while attempts < self.max_attempts:
             try:
                 self.logger.debug("Trying to enqueue %s %s attempts=%d", msg_type, msg, attempts)
 
                 attempts += 1
-                msg_queue.put((msg_type, msg), block=True, timeout=self._timeout)
+                msg_queue.put((msg_type, msg), block=True, timeout=self.timeout)
 
                 self.logger.debug("Enqueued %s %s after %d attempts", msg_type, msg, attempts)
                 break
@@ -34,9 +34,9 @@ class MsgEnqueuer(MsgProcessor):
             except queue.Full as ex:
                 self.logger.debug("queue.Full: %s attempts: %d", ex, attempts)
 
-                if attempts < self._max_attempts:
-                    self.logger.debug("Sleeping %f sec before next attempt", self._wait_between_attempts)
-                    sleep(self._wait_between_attempts)
+                if attempts < self.max_attempts:
+                    self.logger.debug("Sleeping %f sec before next attempt", self.wait_between_attempts)
+                    sleep(self.wait_between_attempts)
                 else:
-                    self.logger.error("Reached max attempts %d", self._max_attempts)
+                    self.logger.error("Reached max attempts %d", self.max_attempts)
                     raise
