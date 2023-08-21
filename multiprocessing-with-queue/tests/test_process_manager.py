@@ -17,7 +17,7 @@ class CountingMsgProducer(MsgProducer):
         self._produced_msgs = []
         self._num_of_msg_to_produce: int = num_of_msg_to_produce
 
-    def yield_msg(self):
+    def yield_msgs(self):
         for i in range(self._num_of_msg_to_produce):
             msg = {
                 "msg_id": i,
@@ -64,7 +64,7 @@ class TestCountingMsgProducer:
     def test_msg_producer_should_report_on_one_msg(self):
         s = CountingMsgProducer(1)
         actual = []
-        for msg in s.yield_msg():
+        for msg in s.yield_msgs():
             actual.append(msg)
         assert len(actual) == 1
         assert len(s.produced_msgs) == 1
@@ -73,7 +73,7 @@ class TestCountingMsgProducer:
     def test_msg_producer_should_report_on_five_msg(self):
         s = CountingMsgProducer(5)
         actual = []
-        for msg in s.yield_msg():
+        for msg in s.yield_msgs():
             actual.append(msg)
         assert len(actual) == 5
         assert len(s.produced_msgs) == 5

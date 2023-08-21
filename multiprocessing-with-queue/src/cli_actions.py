@@ -26,10 +26,11 @@ class SimpleMsgProducer(MsgProducer):
         self._msg_count = msg_count
         self._task_duration_s = task_duration_s
 
-    def yield_msg(self):
-        self.logger.debug("starting to produce messages")
+    def yield_msgs(self):
+        self.logger.debug("start: produce messages")
         for i in range(self._msg_count):
             yield self.create_msg(i)
+        self.logger.debug("end: produce messages")
 
     def create_msg(self, i: int):
         """
@@ -53,6 +54,10 @@ class SimpleMsgConsumer(MsgConsumer):
     def __init__(self):
         self.logger.debug("Constructor")
         self._processed_message_count = 0
+
+    @property
+    def processed_message_count(self):
+        return self._processed_message_count
 
     def __del__(self):
         """Log object deletion"""

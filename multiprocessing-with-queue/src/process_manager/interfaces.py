@@ -1,7 +1,7 @@
 class MsgProducer:
     """Message Producer interface"""
 
-    def yield_msg(self):
+    def yield_msgs(self):
         """Yield all messages"""
         raise NotImplementedError()
 

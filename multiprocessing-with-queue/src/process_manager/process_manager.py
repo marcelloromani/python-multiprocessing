@@ -41,7 +41,7 @@ class ProcessManager:
             worker_process.start()
 
         # put all messages from the producer on the queue
-        for msg in producer.yield_msg():
+        for msg in producer.yield_msgs():
             self._enqueuer.put(self._q, self.MSG_TYPE_USER, msg)
 
         # lastly, put the QUIT message on the queue to signal no more user messages
