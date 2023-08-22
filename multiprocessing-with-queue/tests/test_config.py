@@ -69,3 +69,27 @@ class TestConfigFactory:
 
         obj = Config.from_argparser_args(mock_args)
         assert obj is not None
+
+
+class TestConfigCSV:
+
+    def test_header_count(self):
+        config = Config()
+        headers = config.csv_headers()
+        assert len(headers.split(",")) == 12
+
+    def test_row_field_count(self):
+        config = Config()
+        config.msg_count = 1
+        config.task_duration_sec = 1
+        config.queue_max_size = 1
+        config.consumer_count = 1
+        config.queue_put_timeout_sec = 0
+        config.queue_full_max_attempts = 0
+        config.queue_full_wait_sec = 0
+        config.queue_get_timeout_sec = 0
+        config.queue_empty_max_attempts = 0
+        config.queue_empty_wait_sec = 0
+
+        row_string = config.csv_row(elapsed_sec=1.0)
+        assert len(row_string.split(",")) == 12

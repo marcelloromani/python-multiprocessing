@@ -76,7 +76,7 @@ class SimpleMsgConsumer(MsgConsumer):
 def run_session(config: Config, consumer_min, consumer_max, consumer_step):
     logger = logging.getLogger("RunSession")
 
-    print(get_csv_headers(config))
+    print(config.csv_headers())
     for consumer_count in range(consumer_min, consumer_max + 1, consumer_step):
         config["consumer_count"] = consumer_count
         t_start = perf_counter_ns()
@@ -84,7 +84,7 @@ def run_session(config: Config, consumer_min, consumer_max, consumer_step):
         t_end = perf_counter_ns()
         t_elapsed_sec = (t_end - t_start) / 1_000_000_000
 
-        print(get_csv_row(config, t_elapsed_sec))
+        print(config.csv_row(t_elapsed_sec))
 
 
 def perf_run_single(config: Config) -> float:
@@ -104,18 +104,3 @@ def run_single(config: Config):
 
     proc_mgr = ProcessManager(enqueuer, dequeuer, config.queue_max_size)
     proc_mgr.process(producer, consumer, config.consumer_count)
-
-
-def get_csv_headers(config) -> str:
-    csv_headers = config.CONFIG_ITEMS.copy()
-    csv_headers.insert(0, "run_id")
-    csv_headers.append("elapsed")
-    return ",".join(csv_headers)
-
-
-def get_csv_row(config: Config, t_elapsed_sec: float):
-    csv_row = [config[item] for item in config.CONFIG_ITEMS]
-    csv_row.insert(0, 1)
-    csv_row.append(t_elapsed_sec)
-    csv_row_str = [str(item) for item in csv_row]
-    return ",".join(csv_row_str)
