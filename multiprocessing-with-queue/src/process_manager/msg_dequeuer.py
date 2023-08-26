@@ -21,12 +21,12 @@ class MsgDequeuer(MsgProcessor):
 
         while attempts < self.max_attempts:
             try:
-                self.logger.debug("Trying to dequeue message, attempts=%d", attempts)
-
                 attempts += 1
-                msg_type, msg = msg_queue.get(block=True, timeout=self.timeout)
 
+                self.logger.debug("Trying to dequeue message, attempts=%d", attempts)
+                msg_type, msg = msg_queue.get(block=True, timeout=self.timeout)
                 self.logger.debug("Dequeued %s %s after %d attempts", msg_type, msg, attempts)
+
                 return msg_type, msg
             except TimeoutError as ex:
                 self.logger.error("TimeoutError: %s", ex)

@@ -47,6 +47,7 @@ class ProcessManager:
         # lastly, put the QUIT message on the queue to signal no more user messages
         self._enqueuer.put(self._q, self.MSG_TYPE_QUIT, "")
 
+        # wait for all dequeuer processes to terminate
         for worker_process in workers:
             self.logger.debug("Joining worker process %d", worker_process.pid)
             worker_process.join()
