@@ -4,10 +4,11 @@
 import logging
 from argparse import ArgumentParser
 
-from src.cli_actions import perf_run_single
 from src.cli_actions import run_session
+from src.cli_actions import run_single
 from src.config import Config
 from src.log import log_setup
+from src.perf import duration_s
 
 
 def opt_setup():
@@ -129,7 +130,7 @@ def main():
         # single run with the specified number of consumer processes
         config = Config.from_argparser_args(args)
         config.log_values()
-        elapsed = perf_run_single(config)
+        elapsed, _ = duration_s(run_single, config)
         logger.info("Elapsed: %f", elapsed)
     else:
         # multiple run with an increasing number of consumer processes, CSV output

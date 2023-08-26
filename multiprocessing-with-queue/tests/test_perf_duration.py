@@ -10,16 +10,25 @@ class TestPerfDuration:
         def wait_zero_point_one_sec():
             sleep(0.1)
 
-        duration = duration_ns(wait_zero_point_one_sec)
+        duration, _ = duration_ns(wait_zero_point_one_sec)
 
         assert type(duration) == int
         assert duration >= 100_000_000  # 100ms in nanoseconds
 
-    def test_func_duration_secods_no_args(self):
+    def test_func_duration_seconds_no_args(self):
         def wait_zero_point_one_sec():
             sleep(0.1)
 
-        duration = duration_s(wait_zero_point_one_sec)
+        duration, _ = duration_s(wait_zero_point_one_sec)
 
         assert type(duration) == float
         assert duration >= 0.1
+
+    def test_func_duration_nanosecods_one_arg(self):
+        def multiply(a: int):
+            return a * 2
+
+        duration, res = duration_ns(multiply, 4)
+
+        assert duration > 0
+        assert res == 8

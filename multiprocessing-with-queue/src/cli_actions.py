@@ -87,14 +87,6 @@ def run_session(config: Config, consumer_min, consumer_max, consumer_step):
         print(config.csv_row(t_elapsed_sec))
 
 
-def perf_run_single(config: Config) -> float:
-    t_start = perf_counter_ns()
-    run_single(config)
-    t_end = perf_counter_ns()
-    t_elapsed_sec = (t_end - t_start) / 1_000_000_000
-    return t_elapsed_sec
-
-
 def run_single(config: Config):
     producer = SimpleMsgProducer(config.msg_count, config.task_duration_sec)
     consumer = SimpleMsgConsumer()
