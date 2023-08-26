@@ -1,10 +1,10 @@
 """Implementation of actions routed from CLI options in main.py"""
 
 import logging
-from time import perf_counter_ns
 from time import sleep
 
 from src.config import Config
+from src.perf import duration_s
 from src.process_manager import MsgEnqueuer, MsgDequeuer
 from src.process_manager import MsgProducer, MsgConsumer
 from src.process_manager import ProcessManager
@@ -79,11 +79,7 @@ def run_session(config: Config, consumer_min, consumer_max, consumer_step):
     print(config.csv_headers())
     for consumer_count in range(consumer_min, consumer_max + 1, consumer_step):
         config["consumer_count"] = consumer_count
-        t_start = perf_counter_ns()
-        run_single(config)
-        t_end = perf_counter_ns()
-        t_elapsed_sec = (t_end - t_start) / 1_000_000_000
-
+        t_elapsed_sec = duration_s(run_single, config)
         print(config.csv_row(t_elapsed_sec))
 
 
