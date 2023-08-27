@@ -22,12 +22,7 @@ class MsgEnqueuer(MsgProcessor):
         while attempts < self.max_attempts:
             try:
                 attempts += 1
-
-                self.logger.debug("Trying to enqueue %s %s attempts=%d", msg_type, msg, attempts)
-                msg_queue.put((msg_type, msg), block=True, timeout=self.timeout)
-                self.logger.debug("Enqueued %s %s after %d attempts", msg_type, msg, attempts)
-
-                break
+                return self._process(msg_queue, msg_type, msg, attempts)
             except TimeoutError as ex:
                 self.logger.error("TimeoutError: %s", ex)
                 raise
@@ -40,3 +35,8 @@ class MsgEnqueuer(MsgProcessor):
                 else:
                     self.logger.error("Reached max attempts %d", self.max_attempts)
                     raise
+
+    def _process(self, msg_queue, msg_type, msg, attempts):
+        self.logger.debug("Trying to enqueue %s %s attempts=%d", msg_type, msg, attempts)
+        msg_queue.put((msg_type, msg), block=True, timeout=self.timeout)
+        self.logger.debug("Enqueued %s %s after %d attempts", msg_type, msg, attempts)
