@@ -1,8 +1,8 @@
 import queue
-
+from time import sleep
 import pytest
 from box import Box
-
+from unittest import mock
 from src.process_manager.msg_processor import MsgProcessor
 
 
@@ -129,3 +129,18 @@ class TestMsgProcessorRetryLogic:
         )
         retval = obj._run_with_retry(self.multiply, 3)
         assert retval == 6
+
+    # sleeping between attempts
+
+    def test_if_exception_should_wait_before_next_attempt(self):
+        obj = MsgProcessor(
+            timeout=0,
+            max_attempts=2,
+            wait_between_attempts=0,
+        )
+        ctx = Box()
+        ctx.call_count = 0
+        with mock.patch('time.sleep') as mock_sleep:
+            obj._run_with_retry(self.raise_queue_empty_once, ctx)
+            assert ctx.call_count == 2
+            assert mock_sleep.call_count == 1

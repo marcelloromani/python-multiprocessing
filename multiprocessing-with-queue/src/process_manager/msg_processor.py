@@ -1,6 +1,8 @@
 import logging
-
 import queue
+import time
+
+
 class MsgProcessor:
     logger = logging.getLogger()
 
@@ -47,3 +49,6 @@ class MsgProcessor:
                 self.logger.error("Queue Empty: %s Attempts: %d", ex, attempts)
                 if attempts >= self.max_attempts:
                     raise
+
+            if attempts < self.max_attempts:
+                time.sleep(self.wait_between_attempts)

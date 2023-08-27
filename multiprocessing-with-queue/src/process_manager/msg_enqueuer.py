@@ -17,26 +17,9 @@ class MsgEnqueuer(MsgProcessor):
         super().__init__(timeout, max_attempts, wait_between_attempts)
 
     def put(self, msg_queue: Queue, msg_type: str, msg: str):
-        attempts: int = 0
+        self._run_with_retry(self._process, msg_queue, msg_type, msg)
 
-        while attempts < self.max_attempts:
-            try:
-                attempts += 1
-                return self._process(msg_queue, msg_type, msg, attempts)
-            except TimeoutError as ex:
-                self.logger.error("TimeoutError: %s", ex)
-                raise
-            except queue.Full as ex:
-                self.logger.debug("queue.Full: %s attempts: %d", ex, attempts)
-
-                if attempts < self.max_attempts:
-                    self.logger.debug("Sleeping %f sec before next attempt", self.wait_between_attempts)
-                    sleep(self.wait_between_attempts)
-                else:
-                    self.logger.error("Reached max attempts %d", self.max_attempts)
-                    raise
-
-    def _process(self, msg_queue, msg_type, msg, attempts):
-        self.logger.debug("Trying to enqueue %s %s attempts=%d", msg_type, msg, attempts)
+    def _process(self, msg_queue, msg_type, msg):
+        self.logger.debug("Trying to enqueue %s %s", msg_type, msg)
         msg_queue.put((msg_type, msg), block=True, timeout=self.timeout)
-        self.logger.debug("Enqueued %s %s after %d attempts", msg_type, msg, attempts)
+        self.logger.debug("Enqueued %s %s", msg_type, msg)
