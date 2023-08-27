@@ -17,7 +17,7 @@ class MsgEnqueuer(MsgProcessor):
         super().__init__(timeout, max_attempts, wait_between_attempts)
 
     def put(self, msg_queue: Queue, msg_type: str, msg: str):
-        self._run_with_retry(self._process, msg_queue, msg_type, msg)
+        return self._run_with_retry(self._process, msg_queue, msg_type, msg)
 
     def _process(self, msg_queue, msg_type, msg):
         self.logger.debug("Trying to enqueue %s %s", msg_type, msg)

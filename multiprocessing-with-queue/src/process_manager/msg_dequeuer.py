@@ -17,25 +17,7 @@ class MsgDequeuer(MsgProcessor):
         super().__init__(timeout, max_attempts, wait_between_attempts)
 
     def get(self, msg_queue: Queue) -> (str, str):
-        self._run_with_retry(self._process, msg_queue)
-        attempts: int = 0
-
-        while attempts < self.max_attempts:
-            try:
-                attempts += 1
-                return self._process(msg_queue, attempts)
-            except TimeoutError as ex:
-                self.logger.error("TimeoutError: %s", ex)
-                raise
-            except queue.Empty as ex:
-                self.logger.debug("queue.Empty: %s attempts: %d", ex, attempts)
-
-                if attempts < self.max_attempts:
-                    self.logger.debug("Sleeping %f sec before next attempt", self.wait_between_attempts)
-                    sleep(self.wait_between_attempts)
-                else:
-                    self.logger.error("Reached max attempts %d", self.max_attempts)
-                    raise
+        return self._run_with_retry(self._process, msg_queue)
 
     def _process(self, msg_queue):
         self.logger.debug("Trying to dequeue message")
