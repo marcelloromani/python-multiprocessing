@@ -124,8 +124,6 @@ def main():
     # Configure logging library
     log_setup(logging.getLevelName(args.log_level))
 
-    # TODO see if there's a way to list all options provided to args and log their values
-
     if args.perftest_consumer_count is None:
         # single run with the specified number of consumer processes
         config = Config.from_argparser_args(args)
