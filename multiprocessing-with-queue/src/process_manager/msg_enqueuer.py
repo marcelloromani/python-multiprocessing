@@ -1,7 +1,6 @@
 import logging
-import queue
 from multiprocessing import Queue
-from time import sleep
+
 from .msg_processor import MsgProcessor
 
 
@@ -16,10 +15,10 @@ class MsgEnqueuer(MsgProcessor):
         """
         super().__init__(timeout, max_attempts, wait_between_attempts)
 
-    def put(self, msg_queue: Queue, msg_type: str, msg: str):
-        return self._run_with_retry(self._process, msg_queue, msg_type, msg)
-
     def _process(self, msg_queue, msg_type, msg):
         self.logger.debug("Trying to enqueue %s %s", msg_type, msg)
         msg_queue.put((msg_type, msg), block=True, timeout=self.timeout)
         self.logger.debug("Enqueued %s %s", msg_type, msg)
+
+    def put(self, msg_queue: Queue, msg_type: str, msg: str):
+        return self._run_with_retry(self._process, msg_queue, msg_type, msg)
