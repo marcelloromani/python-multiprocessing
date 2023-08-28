@@ -24,7 +24,7 @@ class TestPerfDuration:
         assert type(duration) == float
         assert duration >= 0.1
 
-    def test_func_duration_nanosecods_one_arg(self):
+    def test_func_duration_nanoseconds_one_arg(self):
         def multiply(a: int):
             return a * 2
 
