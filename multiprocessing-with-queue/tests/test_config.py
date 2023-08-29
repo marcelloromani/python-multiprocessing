@@ -2,6 +2,7 @@ import pytest
 from box.exceptions import BoxKeyError
 
 from src.config import Config
+from .fixtures_utils import fixture_path
 
 
 class TestConfigBasicFeatures:
@@ -69,6 +70,28 @@ class TestConfigFactory:
 
         obj = Config.from_argparser_args(mock_args)
         assert obj is not None
+        for key in obj.CONFIG_ITEMS:
+            assert obj[key] == 1
+
+    def test_can_build_config_obj_from_json_str(self):
+        json_str = '{ "msg_count": 5 }'
+        obj = Config.from_json(json_str)
+        assert obj.msg_count == 5
+
+    def test_can_build_config_obj_from_json_file(self):
+        json_file = fixture_path('config_test.json')
+        obj = Config.from_json(filename=json_file)
+        assert obj.msg_count == 3
+
+    def test_can_build_config_obj_from_yaml_str(self):
+        yaml_str = 'msg_count: 6'
+        obj = Config.from_yaml(yaml_str)
+        assert obj.msg_count == 6
+
+    def test_can_build_config_obj_from_yaml_file(self):
+        yaml_file = fixture_path('config_test.yaml')
+        obj = Config.from_yaml(filename=yaml_file)
+        assert obj.msg_count == 7
 
 
 class TestConfigCSV:
