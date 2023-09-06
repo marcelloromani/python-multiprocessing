@@ -93,6 +93,18 @@ class TestConfigFactory:
         obj = Config.from_yaml(filename=yaml_file)
         assert obj.msg_count == 7
 
+    def test_auto_detection_of_file_format_json(self):
+        obj = Config.from_file(fixture_path('config_test.yaml'))
+        assert obj.msg_count == 7
+
+    def test_auto_detection_of_file_format_yaml(self):
+        obj = Config.from_file(fixture_path('config_test.json'))
+        assert obj.msg_count == 3
+
+    def test_auto_detection_of_file_format_invalid_format(self):
+        with pytest.raises(ValueError):
+            _ = Config.from_file(fixture_path('config_test_invalid.yaml'))
+
 
 class TestConfigCSV:
 

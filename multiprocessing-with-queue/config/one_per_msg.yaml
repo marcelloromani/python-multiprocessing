@@ -1,0 +1,10 @@
+msg_count: 4
+task_duration_sec: 0.5
+queue_max_size: 1
+consumer_count: 4
+queue_put_timeout_sec: 1
+queue_full_max_attempts: 1
+queue_full_wait_sec: 1
+queue_get_timeout_sec: 1
+queue_empty_max_attempts: 1
+queue_empty_wait_sec: 1

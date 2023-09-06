@@ -94,6 +94,12 @@ def opt_setup():
         help="Retry when queue is empty before raising queue empty exception"
     )
 
+    parser.add_argument(
+        "--config", "-c",
+        type=str,
+        help="Configuration file. Can be JSON or YAML."
+    )
+
     # parser.add_argument(
     #     "--mermaid-diagram",
     #     action="store_true",
@@ -124,7 +130,13 @@ def main():
     # Configure logging library
     log_setup(logging.getLevelName(args.log_level))
 
-    if args.perftest_consumer_count is None:
+    if args.config is not None:
+        config = Config.from_file(args.config)
+        config.log_values()
+        elapsed, _ = duration_s(run_single, config)
+        logger.info("Elapsed: %f", elapsed)
+
+    elif args.perftest_consumer_count is None:
         # single run with the specified number of consumer processes
         config = Config.from_argparser_args(args)
         config.log_values()

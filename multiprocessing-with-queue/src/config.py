@@ -1,7 +1,8 @@
 import logging
 
 from box import Box
-
+from box import BoxError
+from json import JSONDecodeError
 
 class Config(Box):
     logger = logging.getLogger("Config")
@@ -25,6 +26,23 @@ class Config(Box):
         for item in cls.CONFIG_ITEMS:
             obj[item] = eval(f"args.{item}")
         return obj
+
+    @classmethod
+    def from_file(cls, filename: str):
+        try:
+            return cls.from_yaml(filename=filename)
+        except BoxError:
+            pass
+
+        try:
+            return cls.from_json(filename=filename)
+        except BoxError:
+            pass
+        except JSONDecodeError:
+            pass
+
+        raise ValueError("Unsupported or unrecognized file format.")
+
 
     def log_values(self):
         for key in self.CONFIG_ITEMS:
