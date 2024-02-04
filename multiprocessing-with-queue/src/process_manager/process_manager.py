@@ -2,9 +2,11 @@
 Connects a message source and a number of message sinks through a queue.
 """
 import logging
+import os
 from multiprocessing import Queue, Process
 
 from src.log import log_setup
+from src.mermaid_diargram import MermaidDiagram
 from .interfaces import MsgProducer, MsgConsumer
 from .msg_dequeuer import MsgDequeuer
 from .msg_enqueuer import MsgEnqueuer
@@ -25,6 +27,7 @@ class ProcessManager:
         self._enqueuer = enqueuer
         self._dequeuer = dequeuer
         self._log_level = self.logger.getEffectiveLevel()
+        self._mmdc = MermaidDiagram("diagram.mermaid")
 
     def process(self, producer: MsgProducer, consumer: MsgConsumer, consumer_count: int):
         """
@@ -42,9 +45,11 @@ class ProcessManager:
 
         # put all messages from the producer on the queue
         for msg in producer.yield_msgs():
+            self._mmdc.append(f"pid_{os.getpid()}->>queue:put({self.MSG_TYPE_USER})")
             self._enqueuer.put(self._q, self.MSG_TYPE_USER, msg)
 
         # lastly, put the QUIT message on the queue to signal no more user messages
+        self._mmdc.append(f"pid_{os.getpid()}->>queue:put({self.MSG_TYPE_QUIT})")
         self._enqueuer.put(self._q, self.MSG_TYPE_QUIT, "")
 
         # wait for all dequeuer processes to terminate
@@ -66,6 +71,7 @@ class ProcessManager:
         while not terminate:
 
             msg_type, msg = self._dequeuer.get(self._q)
+            self._mmdc.append(f"queue->>pid_{os.getpid()}:get({msg_type})")
 
             if msg_type is None:
                 continue
@@ -73,10 +79,12 @@ class ProcessManager:
             if msg_type == self.MSG_TYPE_USER:
                 self.logger.debug("processing %s %s", msg_type, msg)
                 consumer.process_msg(msg)
+                self._mmdc.append(f"pid_{os.getpid()}->>pid_{os.getpid()}:process")
             elif msg_type == self.MSG_TYPE_QUIT:
                 self.logger.debug("Enqueueing QUIT message")
                 self._enqueuer.put(self._q, self.MSG_TYPE_QUIT, "")
                 terminate = True
+                self._mmdc.append(f"pid_{os.getpid()}->>queue:put({self.MSG_TYPE_QUIT})")
             else:
                 raise ValueError(f"Unexpected message type {msg_type}")
 

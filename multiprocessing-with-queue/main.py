@@ -9,7 +9,7 @@ from src.cli_actions import run_single
 from src.config import Config
 from src.log import log_setup
 from src.perf import duration_s
-
+from src.mermaid_diargram import MermaidDiagram
 
 def opt_setup():
     """Configure command-line options"""
@@ -100,12 +100,12 @@ def opt_setup():
         help="Configuration file. Can be JSON or YAML."
     )
 
-    # parser.add_argument(
-    #     "--mermaid-diagram",
-    #     action="store_true",
-    #     default=False,
-    #     help="Output a mermaid-compatible sequence diagram."
-    # )
+    parser.add_argument(
+        "--mermaid",
+        action="store_true",
+        default=False,
+        help="Output a mermaid-compatible sequence diagram."
+    )
 
     parser.add_argument(
         "--log-level",

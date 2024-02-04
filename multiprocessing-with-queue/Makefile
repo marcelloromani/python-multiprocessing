@@ -14,6 +14,9 @@ lint: requirements
 test: requirements
 	. venv/bin/activate && pytest -r A -s --cov=main --cov=src --cov-report=html
 
+mermaid:
+	mmdc -i diagram.mermaid -o diagram.png
+
 help:
 	@echo "test             Run tests"
 	@echo "requirements     Install requirements"
